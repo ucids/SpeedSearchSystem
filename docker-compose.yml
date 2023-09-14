@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  search:
+    image: php:8.1.1-apache
+    volumes:
+      - "./php/:/var/www/html"
+      - "./php_conf/php.ini:/usr/local/etc/php/php.ini"
+      - "/etc/localtime:/etc/localtime:ro"
+      - "/etc/timezone:/etc/timezone:ro"
+    ports:
+      - 5555:80
+    networks:
+      - search-net
+    command: >
+      sh -c "docker-php-ext-install pdo pdo_mysql mysqli && apache2-foreground"
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  db:
+    image: mysql:latest
+    volumes:
+      - db_data:/var/lib/mysql
+      # - ./mydump.sql:/docker-entrypoint-initdb.d/mydump.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: Airbook140$
+      MYSQL_DATABASE: katzkin
+      MYSQL_USER: hunter
+      MYSQL_PASSWORD: Airbook140$
+    ports:
+      - 5200:3306
+    networks:
+      - search-net
+    restart: unless-stopped
+
+networks:
+  search-net:
+    driver: bridge
+
+volumes:
+  db_data:
